@@ -45,6 +45,15 @@ const LoginForm = () => {
       >
         Login with Github
       </button>
+      <button
+        className={styles.github}
+        onClick={() => {
+          signIn("google", { redirect: true, callbackUrl: "/" });
+          // Redirect to dashboard after successful login
+        }}
+      >
+        Login with Google
+      </button>
       <form className={styles.form} action={formAction}>
         <input type="text" placeholder="username" name="username" />
         <input type="password" placeholder="password" name="password" />
