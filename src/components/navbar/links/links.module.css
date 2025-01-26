@@ -1,0 +1,40 @@
+.container{
+   
+}
+.links{
+     display: flex;
+    gap: 20px;
+}
+.logout{
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    background-color: var(--btn);
+    color: white;
+    font-weight: bold;
+}
+.menu,.buttonMenu{
+  display: none;
+}
+@media (max-width: 768px) {
+  .buttonMenu{
+    display: block;
+  }
+    .links{display: none;}
+    .menu{
+        position: absolute;
+        z-index: 100;
+        top: 100px;
+        right:0% ;
+        background-color: var(--bg);
+        width: 50%;
+        height: calc(100vh - 100px);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+    }
+
+  }

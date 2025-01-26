@@ -1,0 +1,21 @@
+.details{
+    display: flex;
+    gap: 20px;
+    align-items: center;
+}
+.noavatar{
+    border-radius: 50%;
+}
+.detailsText{
+    display: flex;
+    gap: 20px;
+}
+.detailsText div{
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.detailsText div span:last-child{
+    color: #777;
+}
