@@ -1,26 +1,26 @@
 import { connectToDb } from "@/lib/utils";
-import { Post } from "@/lib/models";
+import { Post } from "@/lib/model";
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 
 export const GET = async (request, { params }) => {
   const { slug } = params;
-  console.log(slug)
+  console.log(slug);
   try {
-    connectToDb();
+    await connectToDb(); // Ensure you await the connection
     const post = await Post.findOne({ slug: slug });
     return NextResponse.json(post);
   } catch (err) {
     console.error(err);
-    throw new Error("field get post");
+    throw new Error("Failed to get post");
   }
 };
+
 export const DELETE = async (request, { params }) => {
   const { slug } = params;
 
   try {
-    connectToDb();
-
+    await connectToDb(); // Ensure you await the connection
     await Post.deleteOne({ slug });
     revalidatePath("/blog");
     revalidatePath("/admin");

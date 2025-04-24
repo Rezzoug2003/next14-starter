@@ -1,13 +1,14 @@
 "use server";
 import { Post, User } from "./model";
 import { revalidatePath } from "next/cache";
-import { connectTob } from "./utils";
+
 import { signIn } from "./auth";
 import bcrypt from "bcryptjs";
+import { connectToDb } from "@/lib/utils";
 export const addPost = async (provState, formdata) => {
   const { title, desc, slug, userId } = Object.fromEntries(formdata);
   try {
-    connectTob();
+    connectToDb();
     const newPost = await Post({ title, desc, slug, userId });
     await newPost.save();
     console.log("save in db");
@@ -21,7 +22,7 @@ export const addPost = async (provState, formdata) => {
 export const deletePost = async (formdata) => {
   const { id } = Object.fromEntries(formdata);
   try {
-    connectTob();
+    connectToDb();
     await Post.findByIdAndDelete(id);
     console.log("post deleted");
     revalidatePath("/blog");
@@ -35,7 +36,7 @@ export const addUser = async (provState, formData) => {
   const { username, email, password, img, isAdmin } =
     Object.fromEntries(formData);
   try {
-    connectTob();
+    connectToDb();
     const user = await User.findOne({ username });
     if (user) return { error: "Username already exists" };
     const s = await bcrypt.genSalt(10);
@@ -57,7 +58,7 @@ export const addUser = async (provState, formData) => {
 export const deleteUser = async (formData) => {
   const { id } = Object.fromEntries(formData);
   try {
-    connectTob();
+    connectToDb();
     await User.findByIdAndDelete(id);
     console.log("User deleted");
     revalidatePath("/admin");
@@ -75,7 +76,7 @@ export const handleGitubSignIn = async () => {
 //     Object.fromEntries(formdata);
 //   if (password !== passwordRepeat) return { error: "Passwords do not match" };
 //   try {
-//     connectTob();
+//     connectToDb();();
 //     const user = await User.findOne({ username });
 //     if (user) {
 //       return { error: "Username already exists" };
@@ -111,7 +112,7 @@ export const register = async (prevState, formData) => {
     Object.fromEntries(formData);
   if (password !== passwordRepeat) return { error: "Passwords do not match" };
   try {
-    connectTob();
+    connectToDb();
     const user = await User.findOne({ username });
     if (user) return { error: "Username already exists" };
     const s = await bcrypt.genSalt(10);

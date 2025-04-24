@@ -9,7 +9,7 @@ import { authOption } from "@/lib/auth";
 
 const admin = async () => {
   const session = await getServerSession(authOption);
-  console.log(session);
+
   return (
     <div className={styles.container}>
       <div className={styles.row}>

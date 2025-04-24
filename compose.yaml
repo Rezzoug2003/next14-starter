@@ -1,0 +1,31 @@
+version: "3.8"
+services:
+  next-app:
+    image: next-app
+    build: .
+    ports:
+      - "3000:3000"
+    depends_on:
+      - mongo
+    volumes:
+      - .:/app # Sync local changes with the container
+      - /app/node_modules # Prevent overwriting installed dependencies
+    environment:
+      - NODE_ENV=development
+    env_file:
+      - .env.local
+    command: ["npm", "run", "dev"]
+
+  mongo:
+    image: mongo:6.0
+    restart: always
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: secret
+    volumes:
+      - mongo_data:/data/db
+
+volumes:
+  mongo_data:

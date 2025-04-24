@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: next-app
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: next-app
+  template:
+    metadata:
+      labels:
+        app: next-app
+    spec:
+      containers:
+        - name: next-app
+          image: bilalrezzoug/next-app:latest
+          ports:
+            - containerPort: 3000
+          env:
+            - name: NODE_ENV
+              value: "production"
+            - name: MONGO
+              valueFrom:
+                secretKeyRef:
+                  name: next-app-secrets
+                  key: MONGO
+            - name: NEXTAUTH_URL
+              value: "http://localhost:3000"
+            - name: NEXTAUTH_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: next-app-secrets
+                  key: NEXTAUTH_SECRET
+            - name: GITHUB_ID
+              valueFrom:
+                secretKeyRef:
+                  name: next-app-secrets
+                  key: GITHUB_ID
+            - name: GITHUB_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: next-app-secrets
+                  key: GITHUB_SECRET
+            - name: GOOGLE_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: next-app-secrets
+                  key: GOOGLE_CLIENT_ID
+            - name: GOOGLE_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: next-app-secrets
+                  key: GOOGLE_CLIENT_SECRET

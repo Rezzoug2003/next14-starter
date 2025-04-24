@@ -2,14 +2,15 @@ import { type AuthOptions } from "next-auth";
 import GitHubProvider from "next-auth/providers/github";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
-import { connectTob } from "./utils";
+
 import { User } from "./model";
 import bcrypt from "bcryptjs";
-import { authConfig } from "./auth.config";
 
-const login = async (credentials) => {
+import { connectToDb } from "./utils";
+
+const login = async (credentials: any) => {
   try {
-    connectTob();
+    connectToDb();
     const user = await User.findOne({ username: credentials.username });
     if (!user) throw new Error("Wrong credentials!");
 
@@ -25,14 +26,13 @@ const login = async (credentials) => {
       username: user.username,
       isAdmin: user.isAdmin || false,
     };
-  } catch (err) {
+  } catch (err: any) {
     console.error("Login error:", err.message);
     throw new Error("Failed to login");
   }
 };
 
 export const authOption: AuthOptions = {
-  ...authConfig,
   providers: [
     GitHubProvider({
       clientId: process.env.GITHUB_ID as string,
@@ -58,10 +58,10 @@ export const authOption: AuthOptions = {
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   callbacks: {
-    async signIn({ user, account, profile }) {
+    async signIn({ account, profile }) {
       if (account?.provider === "github") {
         try {
-          connectTob();
+          connectToDb();
           let existingUser = await User.findOne({ email: profile?.email });
           if (!existingUser) {
             const newUser = new User({
@@ -78,9 +78,9 @@ export const authOption: AuthOptions = {
       }
       return true;
     },
-    async jwt({ token, user }) {
+    async jwt({ token }) {
       try {
-        connectTob();
+        connectToDb();
         const users = await User.findOne({ email: token.email });
         if (users) {
           token.id = users.id;
@@ -94,9 +94,9 @@ export const authOption: AuthOptions = {
       console.log(token);
       return token;
     },
-    async session({ session, token }) {
+    async session({ session }) {
       try {
-        connectTob();
+        connectToDb();
         const users = await User.findOne({
           email: session.user.email,
         });

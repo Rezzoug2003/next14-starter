@@ -1,14 +1,12 @@
-import NextAuth from "next-auth";
-import { authConfig } from "./lib/auth.config";
 import withAuth from "next-auth/middleware";
-import { connectTob } from "./lib/utils";
+import { connectToDb } from "./lib/utils";
 import { User } from "./lib/model";
 
 export default withAuth({
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token }) {
       try {
-        connectTob();
+        connectToDb();
         const users = await User.findOne({ email: token.email });
         if (users) {
           token.id = users.id;
@@ -49,5 +47,10 @@ export default withAuth({
 });
 
 export const config = {
+  unstable_allowDynamic: [
+    "/lib/utils.js", // allows a single file
+    "**/node_modules/function-bind/**",
+    "/node_modules/mongoose/**", // use a glob to allow anything in the function-bind 3rd party module
+  ],
   matcher: ["/admin/:path*", "/blog/:path*", "/login"],
 };
