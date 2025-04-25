@@ -8,15 +8,15 @@ import { getPost } from "@/lib/data";
 //  if(!res.ok) throw new Error(`Could not fetch post ${slug}`)
 //   return res.json()
 // }
-const getPostAPI = async (slug) => {
-  const res = await fetch(`http://localhost:3000/api/blog/${slug}`);
-  if (!res.ok) throw new Error(`Could not fetch post ${slug}`);
-  return res.json();
-};
+// const getPostAPI = async (slug) => {
+//   const res = await fetch(`http://localhost:3000/api/blog/${slug}`);
+//   if (!res.ok) throw new Error(`Could not fetch post ${slug}`);
+//   return res.json();
+// };
 export const generateMetadata = async ({ params }) => {
   const { slug } = params;
-  // const post = await getPost(slug);
-  const post = await getPostAPI(slug);
+  const post = await getPost(slug);
+  // const post = await getPostAPI(slug);
   return {
     title: post.title,
     description: post.desc,
