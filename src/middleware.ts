@@ -1,41 +1,53 @@
 import { withAuth } from "next-auth/middleware";
 import { NextResponse } from "next/server";
 
-export default withAuth({
-  authorized({ token, req }) {
-    console.log("token middleware:", token);
+const middleware = withAuth(
+  function middleware(req) {
+    const token = req.nextauth.token;
     const pathname = req.nextUrl.pathname;
 
-    // Allow unauthenticated users to access login page
-    if (pathname.startsWith("/login") && !token) {
-      return true;
-    }
-
-    // Redirect authenticated users away from the login page
+    // Redirect authenticated users away from /login
     if (pathname.startsWith("/login") && token) {
-      return NextResponse.redirect(new URL("/", req.nextUrl));
+      return NextResponse.redirect(new URL("/", req.url));
     }
 
-    // Only admins can access the admin panel
+    // Only admins can access /admin
     if (pathname.startsWith("/admin") && (!token || !token.isAdmin)) {
-      return false;
-    }
-
-    // Only authenticated users can access the blog
-    if (pathname.startsWith("/blog") && !token) {
-      return false;
+      return NextResponse.redirect(new URL("/unauthorized", req.url)); // or whatever fallback page
     }
 
     // Allow everything else by default
-    return true;
+    return NextResponse.next();
   },
-});
+  {
+    callbacks: {
+      authorized: ({ token, req }) => {
+        const pathname = req.nextUrl.pathname;
+
+        // Allow unauthenticated users to access login
+        if (pathname.startsWith("/login") && !token) {
+          return true;
+        }
+
+        // Protect /admin
+        if (pathname.startsWith("/admin")) {
+          return !!(token && token.isAdmin);
+        }
+
+        // Protect /blog
+        if (pathname.startsWith("/blog")) {
+          return !!token;
+        }
+
+        // Allow everything else
+        return true;
+      },
+    },
+  }
+);
+
+export default middleware;
 
 export const config = {
-  unstable_allowDynamic: [
-    "/lib/utils.js",
-    "**/node_modules/function-bind/**",
-    "/node_modules/mongoose/**",
-  ],
   matcher: ["/admin/:path*", "/blog/:path*", "/login"],
 };
