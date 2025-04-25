@@ -8,6 +8,7 @@ import bcrypt from "bcryptjs";
 
 import { connectToDb } from "./utils";
 
+// Custom login function for CredentialsProvider
 const login = async (credentials: any) => {
   try {
     connectToDb();
@@ -43,6 +44,7 @@ export const authOption: AuthOptions = {
       clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
     }),
     CredentialsProvider({
+      credentials: {}, // 👈 Added to fix CredentialsProvider TS error
       async authorize(credentials) {
         try {
           const user = await login(credentials);
@@ -62,56 +64,62 @@ export const authOption: AuthOptions = {
       if (account?.provider === "github") {
         try {
           connectToDb();
-          let existingUser = await User.findOne({ email: profile?.email });
+
+          // 👇 Explicitly typing GitHub profile to avoid TS error
+          const githubProfile = profile as {
+            login: string;
+            email: string;
+            avatar_url: string;
+          };
+
+          let existingUser = await User.findOne({ email: githubProfile.email });
           if (!existingUser) {
             const newUser = new User({
-              username: profile?.login,
-              email: profile?.email,
-              image: profile?.avatar_url,
+              username: githubProfile.login,
+              email: githubProfile.email,
+              image: githubProfile.avatar_url,
             });
             await newUser.save();
           }
-        } catch (err) {
+        } catch (err: any) {
           console.error("Error in GitHub sign-in:", err.message);
           return false;
         }
       }
       return true;
     },
-    async jwt({ token }) {
+    jwt: async ({ token }) => {
       try {
         connectToDb();
-        const users = await User.findOne({ email: token.email });
-        if (users) {
-          token.id = users.id;
-          token.username = users.username;
-          token.isAdmin = users.isAdmin;
+        const user = await User.findOne({ email: token.email });
+
+        if (user) {
+          token.userId = user._id.toString();
+          token.isAdmin = user.isAdmin;
         }
+
+        return token; // ✅ Always return a JWT
       } catch (err) {
         console.error(err);
-        return null;
+        return token; // ✅ fallback to original token on error
       }
-      console.log(token);
-      return token;
     },
-    async session({ session }) {
+    session: async ({ session, token }) => {
       try {
         connectToDb();
-        const users = await User.findOne({
-          email: session.user.email,
-        });
+        const users = await User.findOne({ email: session.user?.email });
+        if (!session.user) return session; // 🛑 if no user, just return session as-is
         if (users) {
           session.user.id = users.id;
           session.user.username = users.username;
           session.user.isAdmin = users.isAdmin;
         }
-      } catch (e) {
-        throw new Error(e);
+        return session;
+      } catch (err) {
+        console.error(err);
+        return session;
       }
-
-      return session;
     },
   },
-  // ...authConfig.callbacks,
   secret: process.env.NEXTAUTH_SECRET,
 };

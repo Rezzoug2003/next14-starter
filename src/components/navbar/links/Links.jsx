@@ -3,7 +3,7 @@ import { useState } from "react";
 import styles from "./links.module.css";
 import Navlink from "./navlink/Navlink";
 import Image from "next/image";
-import { auth, signOut, useSession } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 const links = [
   {
     title: "HomePage",
@@ -27,7 +27,6 @@ function Links() {
   const { data: session } = useSession();
   const [open, setOpen] = useState(false);
 
-  const isadmin = session?.user?.isadmin;
   return (
     <div className={styles.container}>
       <div className={styles.links}>
